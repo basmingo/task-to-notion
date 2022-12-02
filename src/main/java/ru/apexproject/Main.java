@@ -1,4 +1,4 @@
-package ru.apex-project;
+package ru.apexproject;
 
 public class Main {
     public static void main(String[] args) {
