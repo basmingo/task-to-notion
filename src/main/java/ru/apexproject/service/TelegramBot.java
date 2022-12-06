@@ -27,13 +27,12 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     public TelegramBot(ApplicationConfig config,
                        TaskManager taskManager,
-                       ChatService chatService,
                        BotCommands botCommands) {
 
         this.config = config;
         this.taskManager = taskManager;
-        this.chatService = chatService;
         this.botCommands = botCommands;
+        this.chatService = new ChatService(config, botCommands);
         this.getFile = new GetFile();
     }
 
