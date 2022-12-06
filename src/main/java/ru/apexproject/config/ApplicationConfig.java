@@ -2,6 +2,7 @@ package ru.apexproject.config;
 
 import lombok.Getter;
 import java.io.*;
+import java.util.Objects;
 import java.util.Properties;
 
 @Getter
@@ -13,12 +14,29 @@ public class ApplicationConfig {
     private final String notionToken;
     private final String notionApiURI;
     private final String notionVersion;
+    private final InputStream chatsDbInput;
+    private PrintWriter chatsDbOutput;
 
     public ApplicationConfig() {
         properties = new Properties();
-        try (InputStream input = new FileInputStream("${:classpath:chatsbase/chatsBase.json")) {
-            properties.load(input);
+        try {
+            properties.load(this.getClass()
+                    .getClassLoader()
+                    .getResourceAsStream("application.properties"));
+
         } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        chatsDbInput = this.getClass().getClassLoader().getResourceAsStream("chatsDB.json");
+        try {
+            this.chatsDbOutput = new PrintWriter((Objects
+                    .requireNonNull(this.getClass()
+                            .getClassLoader()
+                            .getResource("chatsDB.json"))
+                    .getPath()));
+
+        } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
 
@@ -27,5 +45,6 @@ public class ApplicationConfig {
         this.notionToken = properties.getProperty("notion.token");
         this.notionApiURI = properties.getProperty("notion.pages_api_uri");
         this.notionVersion = properties.getProperty("notion.version");
+
     }
 }
