@@ -21,8 +21,7 @@ public class ChatService {
     ChatsDB chatDB;
     private final Map<String, String> chatDbMap;
 
-    public ChatService(ApplicationConfig applicationConfig, BotCommands botCommands) {
-        this.botCommands = botCommands;
+    public ChatService(ApplicationConfig applicationConfig) {
         this.applicationConfig = applicationConfig;
         this.mapper = new ObjectMapper();
         this.chatDbMap = readDbFromJson();
