@@ -8,6 +8,9 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+*Creates different types of Task object and sends it to NotionService
+*/
 public class TaskManager {
     ChatService chatService;
     NotionService notionService;

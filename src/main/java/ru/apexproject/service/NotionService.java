@@ -7,11 +7,14 @@ import java.io.ObjectOutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+/**
+ *Sends a post request with Task object to Notion server
+ */
 public class NotionService {
     ApplicationConfig applicationConfig;
-    URL url;
     HttpURLConnection httpURLConnection;
     ObjectOutputStream out;
+    URL url;
 
     public NotionService(ApplicationConfig applicationConfig) throws IOException {
         this.applicationConfig = applicationConfig;
