@@ -25,15 +25,11 @@ public class TelegramBot extends TelegramLongPollingBot {
     BotCommands botCommands;
     String telegramImageUrl;
 
-    public TelegramBot(ApplicationConfig config,
-                       TaskManager taskManager,
-                       BotCommands botCommands) {
-
-        this.config = config;
-        this.taskManager = taskManager;
-        this.botCommands = botCommands;
-        this.chatService = new ChatService(config, botCommands);
+    public TelegramBot() {
+        this.config = new ApplicationConfig();
+        this.botCommands = new BotCommands();
         this.getFile = new GetFile();
+        this.chatService = new ChatService(this.config, this.botCommands);
     }
 
     @Override
