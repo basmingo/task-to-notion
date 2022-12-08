@@ -27,9 +27,8 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     public TelegramBot() {
         this.config = new ApplicationConfig();
-        this.botCommands = new BotCommands();
         this.getFile = new GetFile();
-        this.chatService = new ChatService(this.config, this.botCommands);
+        this.chatService = new ChatService(this.config);
     }
 
     @Override
