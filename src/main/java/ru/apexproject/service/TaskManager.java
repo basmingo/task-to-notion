@@ -19,11 +19,10 @@ public class TaskManager {
     List<String> assignees;
 
     public TaskManager(ChatService chatService,
-                       NotionService notionService,
                        ApplicationConfig applicationConfig) {
 
         this.chatService = chatService;
-        this.notionService = notionService;
+        this.notionService = new NotionService(applicationConfig);
         this.botCommands = applicationConfig;
     }
 
@@ -34,7 +33,7 @@ public class TaskManager {
                 assignees,
                 chatService.getChatDbMap().get(projectName));
 
-        notionService.doPost(task);
+        notionService.sendPost(task);
     }
 
     public void createTask(
@@ -48,7 +47,7 @@ public class TaskManager {
                 assignees,
                 photo,
                 chatService.getChatDbMap().get(projectName));
-        notionService.doPost(task);
+        notionService.sendPost(task);
     }
 
     private void adjustParameters(Supplier<Stream<String>> messageStream) {
