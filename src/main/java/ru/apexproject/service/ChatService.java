@@ -111,7 +111,8 @@ public class ChatService {
 
     private Map<String, String> readDbFromJson() {
         Map<String, String> result = new HashMap<>();
-        try (InputStream reader = new FileInputStream(applicationConfig.getChatsDb().getPath())) {
+        try (InputStream reader = new FileInputStream(applicationConfig.getChatsDb())) {
+
             chatDB = mapper.readValue(reader, ChatsDB.class);
 
         } catch (IOException e) {
@@ -124,7 +125,7 @@ public class ChatService {
     }
 
     private void writeDbToJson(Map<String, String> map) {
-        try (OutputStream writer = new FileOutputStream(applicationConfig.getChatsDb().getPath())){
+        try (OutputStream writer = new FileOutputStream(applicationConfig.getChatsDb())){
 
             this.chatDB = new ChatsDB(map);
             mapper.writeValue(writer, this.chatDB);
