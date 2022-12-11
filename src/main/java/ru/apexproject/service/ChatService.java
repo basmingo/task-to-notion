@@ -115,8 +115,8 @@ public class ChatService {
             chatDB = mapper.readValue(reader, ChatsDB.class);
 
         } catch (IOException e) {
-            e.printStackTrace();
-            log.info("can't read chats");
+            log.error("reading ChatsDb.json failed");
+            log.error(e.getMessage());
         }
 
         chatDB.getChats().forEach(item -> result.put(item.chatId, item.databaseId));
@@ -130,7 +130,8 @@ public class ChatService {
             mapper.writeValue(writer, this.chatDB);
 
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("writing ChatsDb.json failed");
+            log.error(e.getMessage());
         }
     }
 }
