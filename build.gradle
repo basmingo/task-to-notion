@@ -25,3 +25,21 @@ dependencies {
 test {
     useJUnitPlatform()
 }
+
+jar {
+    manifest {
+        attributes("Implementation-Title": "Gradle",
+                "Implementation-Version": archiveVersion,
+                "Main-Class": "ru.apexproject.Main")
+    }
+}
+
+task customFatJar(type: Jar) {
+    manifest {
+        attributes 'Main-Class': 'ru.apexproject.Main'
+    }
+
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
