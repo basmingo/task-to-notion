@@ -1,5 +1,6 @@
 package ru.apexproject.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.GetFile;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -16,6 +17,7 @@ import java.util.stream.Stream;
 /**Telegram bot massages handler
  * */
 
+@Slf4j
 public class TelegramBot extends TelegramLongPollingBot {
     GetFile getFile;
     ApplicationConfig config;
@@ -29,6 +31,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         this.config = new ApplicationConfig();
         this.getFile = new GetFile();
         this.chatService = new ChatService(this.config);
+        this.taskManager = new TaskManager(this.chatService, this.config);
     }
 
     @Override
@@ -47,7 +50,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                     telegramImageUrl = execute(getFile).getFileUrl(getBotToken());
                     taskManager.createTask(wordsInMessage, chatName, telegramImageUrl);
                 } catch (TelegramApiException e) {
-                    e.printStackTrace();
+                    log.error(e.getMessage());
                 }
 
             } else if (includeTaskCommand(wordsInMessage)) {
