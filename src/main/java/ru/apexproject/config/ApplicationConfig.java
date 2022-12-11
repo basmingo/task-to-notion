@@ -4,7 +4,6 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
-import java.util.Objects;
 import java.util.Properties;
 
 @Getter
@@ -12,37 +11,22 @@ import java.util.Properties;
 public class ApplicationConfig {
     private final Properties properties;
     private final String botName;
-    String botToken;
-
+    private final String botToken;
     private final String notionToken;
     private final String notionApiURI;
     private final String notionVersion;
-    private final InputStream chatsDbInput;
-    private PrintWriter chatsDbOutput;
+    private final String chatsDb;
 
     public ApplicationConfig() {
         properties = new Properties();
-        try {
-            properties.load(this.getClass()
-                    .getClassLoader()
-                    .getResourceAsStream("application.properties"));
+        try (InputStream input = new FileInputStream("application.properties")){
+            properties.load(input);
 
         } catch (IOException e) {
             log.error(e.getMessage());
         }
 
-        chatsDbInput = this.getClass().getClassLoader().getResourceAsStream("chatsDB.json");
-        try {
-            this.chatsDbOutput = new PrintWriter((Objects
-                    .requireNonNull(this.getClass()
-                            .getClassLoader()
-                            .getResource("chatsDB.json"))
-                    .getPath()));
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-
+        this.chatsDb = properties.getProperty("database.location");
         this.botName = properties.getProperty("bot.name");
         this.botToken = properties.getProperty("bot.token");
         this.notionToken = properties.getProperty("notion.token");
