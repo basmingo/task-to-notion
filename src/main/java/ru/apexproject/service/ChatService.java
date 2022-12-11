@@ -13,6 +13,9 @@ import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+/**
+ * handling registration of chat messages, saving new chats in ChatsDb.json
+ */
 @Getter
 @Slf4j
 public class ChatService {
