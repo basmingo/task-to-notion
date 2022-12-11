@@ -1,11 +1,14 @@
 package ru.apexproject.config;
 
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.*;
 import java.util.Objects;
 import java.util.Properties;
 
 @Getter
+@Slf4j
 public class ApplicationConfig {
     private final Properties properties;
     private final String botName;
@@ -25,7 +28,7 @@ public class ApplicationConfig {
                     .getResourceAsStream("application.properties"));
 
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
         }
 
         chatsDbInput = this.getClass().getClassLoader().getResourceAsStream("chatsDB.json");
