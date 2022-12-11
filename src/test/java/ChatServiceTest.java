@@ -11,16 +11,16 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class ChatServiceTest {
+class ChatServiceTest {
+    private final ApplicationConfig applicationConfig = new ApplicationConfig();
+    private final ChatService chatService = new ChatService(applicationConfig);
     private static final int MESSAGE_COUNT = 10;
-    private static final int STARTING_SIZE = 2;
+    private static final int STARTING_SIZE = 3;
     private String registrationMessage;
     private String reRegistrationMessage;
     private String deletionMessage;
     private ChatsDB chatsDB;
     private final ObjectMapper mapper = new ObjectMapper();
-    private final ApplicationConfig applicationConfig = new ApplicationConfig();
-    private final ChatService chatService = new ChatService(applicationConfig);
     private Supplier<Stream<String>> streamSupplier;
 
     @Test
@@ -33,7 +33,7 @@ public class ChatServiceTest {
             this.chatService.registerChat(streamSupplier);
         }
 
-        try (InputStream inputStream = new FileInputStream(applicationConfig.getChatsDb().getPath())) {
+        try (InputStream inputStream = new FileInputStream(applicationConfig.getChatsDb())) {
             chatsDB = mapper.readValue(inputStream, ChatsDB.class);
             Assertions.assertEquals(MESSAGE_COUNT + STARTING_SIZE, chatsDB.getChats().size());
         } catch (IOException e) {
@@ -52,7 +52,7 @@ public class ChatServiceTest {
         }
 
         this.chatService.reRegisterChat(streamSupplier);
-        try (InputStream inputStream = new FileInputStream(applicationConfig.getChatsDb().getPath())) {
+        try (InputStream inputStream = new FileInputStream(applicationConfig.getChatsDb())) {
             chatsDB = mapper.readValue(inputStream, ChatsDB.class);
             Assertions.assertEquals(MESSAGE_COUNT + STARTING_SIZE, chatsDB.getChats().size());
         } catch (IOException e) {
@@ -71,7 +71,7 @@ public class ChatServiceTest {
         }
 
         this.chatService.deleteChat(streamSupplier);
-        try (InputStream inputStream = new FileInputStream(applicationConfig.getChatsDb().getPath())) {
+        try (InputStream inputStream = new FileInputStream(applicationConfig.getChatsDb())) {
             chatsDB = mapper.readValue(inputStream, ChatsDB.class);
             Assertions.assertEquals(STARTING_SIZE, chatsDB.getChats().size());
         } catch (IOException e) {
