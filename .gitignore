@@ -2,3 +2,4 @@
 /build/
 /application.properties
 /chatsDB.json
+/src/main/resources/application.properties
