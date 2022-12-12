@@ -5,10 +5,6 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import ru.apexproject.config.ApplicationConfig;
 import ru.apexproject.config.BotCommands;
-import ru.apexproject.dto.ChatsDB;
-import java.io.*;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -21,124 +17,79 @@ import java.util.stream.Stream;
 public class ChatService {
     private final JsonHandler jsonHandler;
     private final Map<String, String> chatDbMap;
-    ChatsDB chatDB;
-    ObjectMapper mapper;
-    ApplicationConfig applicationConfig;
-    BotCommands botCommands;
+    private final ObjectMapper mapper;
+    private final ApplicationConfig applicationConfig;
 
     public ChatService(ApplicationConfig applicationConfig) {
         this.applicationConfig = applicationConfig;
         this.jsonHandler = new JsonHandler(applicationConfig);
         this.chatDbMap = jsonHandler.loadDbFromJson();
         this.mapper = new ObjectMapper();
-        this.chatDbMap = readDbFromJson();
     }
 
     public void registerChat(Supplier<Stream<String>> streamSupplier) {
-        Supplier<Stream<String>> parsedData = () -> streamSupplier
-                .get()
-                .filter(word -> !word.equals(BotCommands.REGISTER_DATABASE))
-                .filter(word -> !word.equals("="))
-                .filter(word -> !word.contains("="));
+        Supplier<Stream<String>> parsedSupplier = parseSupplier(streamSupplier);
+        String chatName = getChatName(parsedSupplier);
+        String databaseId = getDatabaseId(parsedSupplier);
 
-        if (parsedData.get().count() == 2) {
-            addToDB(parsedData.get().toList());
-        }
-        else {
+        if (!this.chatDbMap.containsKey(chatName)) {
+            this.chatDbMap.put(chatName, databaseId);
+            this.jsonHandler.writeDbToJson(this.chatDbMap);
+        } else {
             log.info("invalid registration message");
         }
     }
 
     public void reRegisterChat(Supplier<Stream<String>> streamSupplier) {
-        Supplier<Stream<String>> parsedData = () -> streamSupplier
-                .get()
-                .filter(word -> !word.equals(BotCommands.REREGISTER_DATABASE))
-                .filter(word -> !word.equals("="))
-                .filter(word -> !word.contains("="));
+        Supplier<Stream<String>> parsedSupplier = parseSupplier(streamSupplier);
+        String chatName = getChatName(parsedSupplier);
+        String databaseId = getDatabaseId(parsedSupplier);
 
-        if (parsedData.get().count() == 2) {
-            rewriteToDB(parsedData.get().toList());
-        }
-        else {
-            log.info("invalid reregistration message");
+        if (this.chatDbMap.containsKey(chatName)) {
+            this.chatDbMap.put(chatName, databaseId);
+            this.jsonHandler.writeDbToJson(this.chatDbMap);
+        } else {
+            log.info("no such database name");
         }
     }
 
     public void deleteChat(Supplier<Stream<String>> streamSupplier) {
-        Supplier<Stream<String>> parsedData = () -> streamSupplier
-                .get()
-                .filter(word -> !word.equals(BotCommands.DELETE_DATABASE));
-
-        if (parsedData.get().count() == 1) {
-            deleteFromDB(parsedData.get().toList());
-        }
-        else {
-            log.info("invalid deletion message");
-        }
-    }
-
-    private void addToDB(List<String> data) {
-        String chatName = data.get(0);
-        String databaseId = data.get(1);
-
-        if (!this.chatDbMap.containsKey(chatName)) {
-            this.chatDbMap.put(chatName, databaseId);
-            this.jsonHandler.writeDbToJson(this.chatDbMap);
-
-        } else {
-            log.info("name or database id is already in DB");
-        }
-    }
-
-    private void rewriteToDB(List<String> data) {
-        String chatName = data.get(0);
-        String databaseId = data.get(1);
-
-        if (this.chatDbMap.containsKey(chatName)) {
-            this.chatDbMap.put(chatName, databaseId);
-            this.jsonHandler.writeDbToJson(this.chatDbMap);
-
-        } else {
-            log.info("no such database name");
-        }
-    }
-
-    private void deleteFromDB(List<String> data) {
-        String chatName = data.get(0);
+        Supplier<Stream<String>> parsedSupplier = parseSupplier(streamSupplier);
+        String chatName = getChatName(parsedSupplier);
 
         if (this.chatDbMap.containsKey(chatName)) {
             this.chatDbMap.remove(chatName);
             this.jsonHandler.writeDbToJson(this.chatDbMap);
-
         } else {
-            log.info("no such database name");
+            log.info("invalid deletion message");
         }
     }
 
-    private Map<String, String> readDbFromJson() {
-        Map<String, String> result = new HashMap<>();
-        try (InputStream reader = new FileInputStream(applicationConfig.getChatsDb())) {
-
-            chatDB = mapper.readValue(reader, ChatsDB.class);
-
-        } catch (IOException e) {
-            log.error("reading ChatsDb.json failed");
-            log.error(e.getMessage());
-        }
-
-        chatDB.getChats().forEach(item -> result.put(item.chatId, item.databaseId));
-        return result;
+    private static Supplier<Stream<String>> parseSupplier(Supplier<Stream<String>> streamSupplier) {
+        return () -> streamSupplier
+                .get()
+                .filter(word -> !word.equals(BotCommands.REGISTER_DATABASE))
+                .filter(word -> !word.equals(BotCommands.REREGISTER_DATABASE))
+                .filter(word -> !word.equals(BotCommands.DELETE_DATABASE))
+                .filter(word -> !word.equals("="))
+                .filter(word -> !word.contains("="));
     }
 
-    private void writeDbToJson(Map<String, String> map) {
-        try (OutputStream writer = new FileOutputStream(applicationConfig.getChatsDb())){
+    private String getChatName(Supplier<Stream<String>> streamSupplier) {
+        long wordsCount = streamSupplier.get().count();
 
-            this.chatDB = new ChatsDB(map);
-            mapper.writeValue(writer, this.chatDB);
-
-        } catch (IOException e) {
-            log.error("writing ChatsDb.json failed");
-            log.error(e.getMessage());
+        if (wordsCount > 0 && wordsCount < 3) {
+            return streamSupplier.get().toList().get(0);
         }
+        throw new IllegalArgumentException();
+    }
+
+    private String getDatabaseId(Supplier<Stream<String>> streamSupplier) {
+        long wordsCount = streamSupplier.get().count();
+
+        if (wordsCount > 0 && wordsCount < 3) {
+            return streamSupplier.get().toList().get(1);
+        }
+        throw new IllegalArgumentException();
     }
 }
