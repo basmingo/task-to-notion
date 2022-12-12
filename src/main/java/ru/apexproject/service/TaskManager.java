@@ -1,5 +1,6 @@
 package ru.apexproject.service;
 
+import lombok.extern.slf4j.Slf4j;
 import ru.apexproject.config.BotCommands;
 import ru.apexproject.dto.notion.Task;
 import ru.apexproject.config.ApplicationConfig;
@@ -11,29 +12,30 @@ import java.util.stream.Stream;
 /**
 *Creates different types of Task object and sends it to NotionService
 */
+@Slf4j
 public class TaskManager {
-    ChatService chatService;
-    NotionService notionService;
-    ApplicationConfig botCommands;
-    String description;
-    List<String> assignees;
+    private final ChatService chatService;
+    private final NotionService notionService;
+    private String description;
+    private List<String> assignees;
 
     public TaskManager(ChatService chatService,
                        ApplicationConfig applicationConfig) {
 
         this.chatService = chatService;
         this.notionService = new NotionService(applicationConfig);
-        this.botCommands = applicationConfig;
     }
 
     public void createTask(Supplier<Stream<String>> messageStream, String projectName) {
-        adjustParameters(messageStream);
-        Task task = new Task(
-                description,
-                assignees,
-                chatService.getChatDbMap().get(projectName));
+        if (chatsDbContains(projectName)) {
+            adjustParameters(messageStream);
+            Task task = new Task(
+                    this.description,
+                    this.assignees,
+                    this.chatService.getChatDbMap().get(projectName));
 
-        notionService.sendPost(task);
+            this.notionService.sendPost(task);
+        }
     }
 
     public void createTask(
@@ -41,27 +43,40 @@ public class TaskManager {
             String projectName,
             String photo) {
 
-        adjustParameters(messageStream);
-        Task task = new Task(
-                description,
-                assignees,
-                photo,
-                chatService.getChatDbMap().get(projectName));
-        notionService.sendPost(task);
+        if (chatsDbContains(projectName)) {
+            adjustParameters(messageStream);
+            Task task = new Task(
+                    this.description,
+                    this.assignees,
+                    photo,
+                    this.chatService.getChatDbMap().get(projectName));
+
+            this.notionService.sendPost(task);
+        }
     }
 
     private void adjustParameters(Supplier<Stream<String>> messageStream) {
-        description = messageStream
+        this.description = messageStream
                 .get()
                 .filter(word -> word.charAt(0) != '@')
                 .filter(word -> !word.equals(BotCommands.CREATE_TASK))
                 .collect(Collectors.joining(" "));
 
-        assignees = messageStream
+        this.assignees = messageStream
                 .get()
                 .filter(word -> word.charAt(0) == '@')
                 .collect(Collectors.toList());
 
-        if (assignees.isEmpty()) assignees.add("@all");
+        if (this.assignees.isEmpty()) {
+            this.assignees.add("@all");
+        }
+    }
+
+    private boolean chatsDbContains(String projectName) {
+        if (this.chatService.getChatDbMap().get(projectName) != null) {
+            return true;
+        }
+        log.error("chat {} is unregistered in chatsDB", projectName);
+        return false;
     }
 }
