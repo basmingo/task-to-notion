@@ -19,6 +19,7 @@ import java.util.stream.Stream;
 @Getter
 @Slf4j
 public class ChatService {
+    private final JsonHandler jsonHandler;
     private final Map<String, String> chatDbMap;
     ChatsDB chatDB;
     ObjectMapper mapper;
@@ -27,6 +28,8 @@ public class ChatService {
 
     public ChatService(ApplicationConfig applicationConfig) {
         this.applicationConfig = applicationConfig;
+        this.jsonHandler = new JsonHandler(applicationConfig);
+        this.chatDbMap = jsonHandler.loadDbFromJson();
         this.mapper = new ObjectMapper();
         this.chatDbMap = readDbFromJson();
     }
@@ -80,7 +83,8 @@ public class ChatService {
 
         if (!this.chatDbMap.containsKey(chatName)) {
             this.chatDbMap.put(chatName, databaseId);
-            writeDbToJson(this.chatDbMap);
+            this.jsonHandler.writeDbToJson(this.chatDbMap);
+
         } else {
             log.info("name or database id is already in DB");
         }
@@ -92,7 +96,8 @@ public class ChatService {
 
         if (this.chatDbMap.containsKey(chatName)) {
             this.chatDbMap.put(chatName, databaseId);
-            writeDbToJson(this.chatDbMap);
+            this.jsonHandler.writeDbToJson(this.chatDbMap);
+
         } else {
             log.info("no such database name");
         }
@@ -103,7 +108,8 @@ public class ChatService {
 
         if (this.chatDbMap.containsKey(chatName)) {
             this.chatDbMap.remove(chatName);
-            writeDbToJson(this.chatDbMap);
+            this.jsonHandler.writeDbToJson(this.chatDbMap);
+
         } else {
             log.info("no such database name");
         }
