@@ -7,7 +7,7 @@ import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 import ru.apexproject.service.TelegramBot;
 
 @Slf4j
-public class Main {
+public class TaskToNotionBot {
     public static void main(String[] args) {
         try {
             TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
