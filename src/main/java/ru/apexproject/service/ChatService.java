@@ -65,6 +65,14 @@ public class ChatService {
         }
     }
 
+    public boolean chatDbContains(String chatName) {
+        if (this.chatDbMap.containsKey(chatName)) return true;
+        else {
+            log.error("chat {} is unregistered in chatsDB", chatName);
+            return false;
+        }
+    }
+
     private static Supplier<Stream<String>> parseSupplier(Supplier<Stream<String>> streamSupplier) {
         return () -> streamSupplier
                 .get()

@@ -27,7 +27,7 @@ public class TaskManager {
     }
 
     public void createTask(Supplier<Stream<String>> messageStream, String projectName) {
-        if (chatsDbContains(projectName)) {
+        if (chatService.chatDbContains(projectName)) {
             adjustParameters(messageStream);
             Task task = new Task(
                     this.description,
@@ -43,7 +43,7 @@ public class TaskManager {
             String projectName,
             String photo) {
 
-        if (chatsDbContains(projectName)) {
+        if (chatService.chatDbContains(projectName)) {
             adjustParameters(messageStream);
             Task task = new Task(
                     this.description,
@@ -70,13 +70,5 @@ public class TaskManager {
         if (this.assignees.isEmpty()) {
             this.assignees.add("@all");
         }
-    }
-
-    private boolean chatsDbContains(String projectName) {
-        if (this.chatService.getChatDbMap().get(projectName) != null) {
-            return true;
-        }
-        log.error("chat {} is unregistered in chatsDB", projectName);
-        return false;
     }
 }
