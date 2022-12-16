@@ -1,11 +1,7 @@
 import org.junit.jupiter.api.*;
 import ru.apexproject.config.ApplicationConfig;
-import ru.apexproject.dto.ChatsDB;
 import ru.apexproject.service.ChatService;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import ru.apexproject.service.JsonHandler;
 import java.util.Arrays;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -14,13 +10,12 @@ import java.util.stream.Stream;
 class ChatServiceTest {
     private final ApplicationConfig applicationConfig = new ApplicationConfig();
     private final ChatService chatService = new ChatService(applicationConfig);
-    private static final int MESSAGE_COUNT = 10;
+    private final JsonHandler jsonHandler = new JsonHandler(applicationConfig);
+    private static final int MESSAGE_COUNT = 3;
     private static final int STARTING_SIZE = 3;
     private String registrationMessage;
     private String reRegistrationMessage;
     private String deletionMessage;
-    private ChatsDB chatsDB;
-    private final ObjectMapper mapper = new ObjectMapper();
     private Supplier<Stream<String>> streamSupplier;
 
     @Test
@@ -32,32 +27,26 @@ class ChatServiceTest {
                     .stream(registrationMessage.split(" "));
             this.chatService.registerChat(streamSupplier);
         }
+        Assertions.assertEquals(MESSAGE_COUNT + STARTING_SIZE,
+                jsonHandler.loadDbFromJson().size());
 
-        try (InputStream inputStream = new FileInputStream(applicationConfig.getChatsDb())) {
-            chatsDB = mapper.readValue(inputStream, ChatsDB.class);
-            Assertions.assertEquals(MESSAGE_COUNT + STARTING_SIZE, chatsDB.getChats().size());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        Assertions.assertTrue(chatService.chatDbContains("TestingChat1"));
+        Assertions.assertFalse(chatService.chatDbContains("FalseQuery"));
     }
 
     @Test
     @Order(2)
     void reRegistrationTest() {
         for (int i = 0; i < MESSAGE_COUNT; i++) {
-            reRegistrationMessage = "#reregister TestingChat" + i + " = " + i;
+            reRegistrationMessage = "#reregister TestingChat" + i + " = " + i + 1;
             streamSupplier = () -> Arrays
                     .stream(reRegistrationMessage.split(" "));
             this.chatService.reRegisterChat(streamSupplier);
         }
-
-        this.chatService.reRegisterChat(streamSupplier);
-        try (InputStream inputStream = new FileInputStream(applicationConfig.getChatsDb())) {
-            chatsDB = mapper.readValue(inputStream, ChatsDB.class);
-            Assertions.assertEquals(MESSAGE_COUNT + STARTING_SIZE, chatsDB.getChats().size());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        Assertions.assertEquals(MESSAGE_COUNT + STARTING_SIZE,
+                jsonHandler.loadDbFromJson().size());
+        Assertions.assertTrue(chatService.chatDbContains("TestingChat1"));
+        Assertions.assertFalse(chatService.chatDbContains("FalseQuery"));
     }
 
     @Test
@@ -70,13 +59,8 @@ class ChatServiceTest {
             this.chatService.deleteChat(streamSupplier);
         }
 
-        this.chatService.deleteChat(streamSupplier);
-        try (InputStream inputStream = new FileInputStream(applicationConfig.getChatsDb())) {
-            chatsDB = mapper.readValue(inputStream, ChatsDB.class);
-            Assertions.assertEquals(STARTING_SIZE, chatsDB.getChats().size());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        Assertions.assertEquals(STARTING_SIZE,
+                jsonHandler.loadDbFromJson().size());
+        Assertions.assertFalse(chatService.chatDbContains("TestingChat1"));
     }
-
 }
