@@ -35,7 +35,7 @@ public class TaskManager {
                     this.chatService.getChatDbMap().get(projectName));
 
             this.notionService.sendPost(task);
-        }
+        } else throw new IllegalArgumentException();
     }
 
     public void createTask(
@@ -52,7 +52,7 @@ public class TaskManager {
                     this.chatService.getChatDbMap().get(projectName));
 
             this.notionService.sendPost(task);
-        }
+        } else throw new IllegalArgumentException();
     }
 
     private void adjustParameters(Supplier<Stream<String>> messageStream) {
