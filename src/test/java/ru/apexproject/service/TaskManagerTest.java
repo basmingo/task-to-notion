@@ -2,19 +2,17 @@ package ru.apexproject.service;
 
 import org.junit.jupiter.api.Test;
 import ru.apexproject.config.ApplicationConfig;
-
 import java.util.Arrays;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class TaskManagerTest {
     private final String TEST_TASK = "validation test";
     private final String TEST_CHAT = "BotTest2";
-    private final ApplicationConfig applicationConfig = new ApplicationConfig();
-    private final ChatService chatService = new ChatService(applicationConfig);
-    private final TaskManager taskManager = new TaskManager(chatService, applicationConfig);
+    private final ApplicationConfig config = new ApplicationConfig();
+    private final ChatService chatService = new ChatService(config);
+    private final TaskManager taskManager = new TaskManager(chatService, config);
 
     @Test
     void createTask() {

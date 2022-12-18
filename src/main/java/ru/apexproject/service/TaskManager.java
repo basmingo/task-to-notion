@@ -10,29 +10,23 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
-*Creates different types of Task object and sends it to NotionService
-*/
+ * Creates different types of Task object and sends it to NotionService
+ */
 @Slf4j
 public class TaskManager {
     private final ChatService chatService;
     private final NotionService notionService;
-    private String description;
-    private List<String> assignees;
-
-    public TaskManager(ChatService chatService,
-                       ApplicationConfig applicationConfig) {
-
+    public TaskManager(ChatService chatService, ApplicationConfig config) {
         this.chatService = chatService;
-        this.notionService = new NotionService(applicationConfig);
+        this.notionService = new NotionService(config);
     }
 
-    public void createTask(Supplier<Stream<String>> messageStream, String projectName) {
-        if (chatService.chatDbContains(projectName)) {
-            adjustParameters(messageStream);
+    public void createTask(Supplier<Stream<String>> messageStream, String chatName) {
+        if (chatService.chatDbContains(chatName)) {
             Task task = new Task(
-                    this.description,
-                    this.assignees,
-                    this.chatService.getChatDbMap().get(projectName));
+                    getTaskMessage(messageStream),
+                    getTaskAssignees(messageStream),
+                    this.chatService.getChatDbMap().get(chatName));
 
             this.notionService.sendPost(task);
         } else throw new IllegalArgumentException();
@@ -44,10 +38,9 @@ public class TaskManager {
             String photo) {
 
         if (chatService.chatDbContains(projectName)) {
-            adjustParameters(messageStream);
             Task task = new Task(
-                    this.description,
-                    this.assignees,
+                    getTaskMessage(messageStream),
+                    getTaskAssignees(messageStream),
                     photo,
                     this.chatService.getChatDbMap().get(projectName));
 
@@ -55,20 +48,23 @@ public class TaskManager {
         } else throw new IllegalArgumentException();
     }
 
-    private void adjustParameters(Supplier<Stream<String>> messageStream) {
-        this.description = messageStream
+    private List<String> getTaskAssignees(Supplier<Stream<String>> messageStream) {
+        List<String> parsedTaskAssignees =  messageStream
+                .get()
+                .filter(word -> word.charAt(0) == '@')
+                .toList();
+
+        if (parsedTaskAssignees.isEmpty()) {
+            return List.of("@all");
+        }
+        return parsedTaskAssignees;
+    }
+
+    private String getTaskMessage(Supplier<Stream<String>> messageStream) {
+        return messageStream
                 .get()
                 .filter(word -> word.charAt(0) != '@')
                 .filter(word -> !word.equals(BotCommands.CREATE_TASK))
                 .collect(Collectors.joining(" "));
-
-        this.assignees = messageStream
-                .get()
-                .filter(word -> word.charAt(0) == '@')
-                .collect(Collectors.toList());
-
-        if (this.assignees.isEmpty()) {
-            this.assignees.add("@all");
-        }
     }
 }
