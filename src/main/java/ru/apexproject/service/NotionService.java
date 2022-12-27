@@ -15,20 +15,14 @@ import java.nio.charset.StandardCharsets;
  */
 @Slf4j
 public class NotionService {
-    private final ApplicationConfig applicationConfig;
-    private URL url;
     private HttpURLConnection con;
-
-    public NotionService(ApplicationConfig applicationConfig) {
-        this.applicationConfig = applicationConfig;
-    }
 
     public void sendPost(Task task)  {
         try {
-            url = new URL(applicationConfig.getNotionApiURI());
+            URL url = new URL(ApplicationConfig.NOTION_API_URI);
             con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("POST");
-            con.setRequestProperty("Authorization", "Bearer " + applicationConfig.getNotionToken());
+            con.setRequestProperty("Authorization", "Bearer " + ApplicationConfig.NOTION_TOKEN);
             con.setRequestProperty("Notion-Version", "2022-06-28");
             con.setRequestProperty("Accept", "application/json");
             con.setRequestProperty("Content-Type", "application/json");

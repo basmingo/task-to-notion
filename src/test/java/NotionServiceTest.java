@@ -5,7 +5,7 @@ import ru.apexproject.dto.notion.Task;
 import ru.apexproject.service.NotionService;
 
 public class NotionServiceTest {
-    NotionService notionService = new NotionService(new ApplicationConfig());
+    NotionService notionService = new NotionService();
 
     @Test
     void sendPost() {

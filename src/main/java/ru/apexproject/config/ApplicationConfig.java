@@ -11,45 +11,65 @@ import java.util.Properties;
 public class ApplicationConfig {
     private static final String PROPERTIES_NAME = "/application.properties";
     private static final String RECOVER_PROPERTIES_NAME = "application.properties";
-    private final File location;
-    private final String parentLocation;
-    private final Properties properties;
-    private final String botName;
-    private final String botToken;
-    private final String notionToken;
-    private final String notionApiURI;
-    private final String notionVersion;
-    private final String chatsDb;
+    private static final Properties PROPERTIES;
+    public static final File LOCATION;
+    public static final String PARENT_LOCATION;
+    public static final String BOT_NAME;
+    public static final String BOT_TOKEN;
+    public static final String NOTION_TOKEN;
+    public static final String NOTION_API_URI;
+    public static final String NOTION_VERSION;
+    public static final String CHATS_DB;
 
-    public ApplicationConfig() {
-        properties = new Properties();
-        location = new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
-        parentLocation = location.getParentFile().getAbsolutePath();
+    public static final ClassLoader CLASS_LOADER;
+
+    public static final String TASK_COMMAND;
+    public static final String REGISTER_COMMAND;
+    public static final String REREGISTER_COMMAND;
+    public static final String DELETE_COMMAND;
+    public static final String EQUALS_COMMAND;
+
+    static {
+        PROPERTIES = new Properties();
+        LOCATION = new File(ApplicationConfig.class
+                .getProtectionDomain()
+                .getCodeSource()
+                .getLocation()
+                .getPath());
+
+        PARENT_LOCATION = LOCATION.getParentFile().getAbsolutePath();
+        CLASS_LOADER = ApplicationConfig.class.getClassLoader();
+
         loadProperties();
+        CHATS_DB = PROPERTIES.getProperty("database.location");
 
-        this.chatsDb = properties.getProperty("database.location");
-        this.botName = properties.getProperty("bot.name");
-        this.botToken = properties.getProperty("bot.token");
-        this.notionToken = properties.getProperty("notion.token");
-        this.notionApiURI = properties.getProperty("notion.pages_api_uri");
-        this.notionVersion = properties.getProperty("notion.version");
+        BOT_NAME = PROPERTIES.getProperty("bot.name");
+        BOT_TOKEN = PROPERTIES.getProperty("bot.token");
+
+        NOTION_TOKEN = PROPERTIES.getProperty("notion.token");
+        NOTION_API_URI = PROPERTIES.getProperty("notion.pages_api_uri");
+        NOTION_VERSION = PROPERTIES.getProperty("notion.version");
+
+        TASK_COMMAND = PROPERTIES.getProperty("commands.task");
+        REGISTER_COMMAND = PROPERTIES.getProperty("commands.register");
+        REREGISTER_COMMAND = PROPERTIES.getProperty("commands.reregister");
+        DELETE_COMMAND = PROPERTIES.getProperty("commands.delete");
+        EQUALS_COMMAND = PROPERTIES.getProperty("commands.equals");
     }
 
-    private void loadProperties() {
-        try (InputStream input = new FileInputStream(parentLocation + PROPERTIES_NAME)) {
-            properties.load(input);
-
+    private static void loadProperties() {
+        try (InputStream input = new FileInputStream(PARENT_LOCATION + PROPERTIES_NAME)) {
+            PROPERTIES.load(input);
         } catch (IOException e) {
             log.error(e.getMessage());
             loadRecoverProperties();
         }
     }
 
-    private void loadRecoverProperties() {
-        try (InputStream input = this.getClass().getClassLoader().getResourceAsStream(RECOVER_PROPERTIES_NAME)) {
-            properties.load(input);
+    private static void loadRecoverProperties() {
+        try (InputStream input = CLASS_LOADER.getResourceAsStream(RECOVER_PROPERTIES_NAME)) {
+            PROPERTIES.load(input);
             log.info("recover properties loaded");
-
         } catch (IOException e) {
             log.error(e.getMessage());
         }

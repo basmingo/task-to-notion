@@ -16,9 +16,9 @@ import java.util.stream.Stream;
 public class TaskManager {
     private final ChatService chatService;
     private final NotionService notionService;
-    public TaskManager(ChatService chatService, ApplicationConfig config) {
+    public TaskManager(ChatService chatService) {
         this.chatService = chatService;
-        this.notionService = new NotionService(config);
+        this.notionService = new NotionService();
     }
 
     public void createTask(Supplier<Stream<String>> messageStream, String chatName) {
@@ -26,9 +26,9 @@ public class TaskManager {
             Task task = new Task(
                     getTaskMessage(messageStream),
                     getTaskAssignees(messageStream),
-                    this.chatService.getChatDbMap().get(chatName));
+                    chatService.getChatDbMap().get(chatName));
 
-            this.notionService.sendPost(task);
+            notionService.sendPost(task);
         } else throw new IllegalArgumentException();
     }
 
@@ -42,9 +42,9 @@ public class TaskManager {
                     getTaskMessage(messageStream),
                     getTaskAssignees(messageStream),
                     photo,
-                    this.chatService.getChatDbMap().get(projectName));
+                    chatService.getChatDbMap().get(projectName));
 
-            this.notionService.sendPost(task);
+            notionService.sendPost(task);
         } else throw new IllegalArgumentException();
     }
 
@@ -64,7 +64,7 @@ public class TaskManager {
         return messageStream
                 .get()
                 .filter(word -> word.charAt(0) != '@')
-                .filter(word -> !word.equals(BotCommands.CREATE_TASK))
+                .filter(word -> !word.equals(BotCommands.CREATE_TASK.getMessage()))
                 .collect(Collectors.joining(" "));
     }
 }

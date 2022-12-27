@@ -1,5 +1,4 @@
 import org.junit.jupiter.api.*;
-import ru.apexproject.config.ApplicationConfig;
 import ru.apexproject.service.ChatService;
 import ru.apexproject.service.JsonHandler;
 import java.util.Arrays;
@@ -8,9 +7,8 @@ import java.util.stream.Stream;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class ChatServiceTest {
-    private final ApplicationConfig applicationConfig = new ApplicationConfig();
-    private final ChatService chatService = new ChatService(applicationConfig);
-    private final JsonHandler jsonHandler = new JsonHandler(applicationConfig);
+    private final ChatService chatService = new ChatService();
+    private final JsonHandler jsonHandler = new JsonHandler();
     private static final int MESSAGE_COUNT = 3;
     private static final int STARTING_SIZE = 3;
     private String registrationMessage;

@@ -18,11 +18,9 @@ public class ChatService {
     private final JsonHandler jsonHandler;
     private final Map<String, String> chatDbMap;
     private final ObjectMapper mapper;
-    private final ApplicationConfig applicationConfig;
 
-    public ChatService(ApplicationConfig applicationConfig) {
-        this.applicationConfig = applicationConfig;
-        this.jsonHandler = new JsonHandler(applicationConfig);
+    public ChatService() {
+        this.jsonHandler = new JsonHandler();
         this.chatDbMap = jsonHandler.loadDbFromJson();
         this.mapper = new ObjectMapper();
     }
@@ -32,9 +30,9 @@ public class ChatService {
         String chatName = getChatName(parsedSupplier);
         String databaseId = getDatabaseId(parsedSupplier);
 
-        if (!this.chatDbMap.containsKey(chatName)) {
-            this.chatDbMap.put(chatName, databaseId);
-            this.jsonHandler.writeDbToJson(this.chatDbMap);
+        if (!chatDbMap.containsKey(chatName)) {
+            chatDbMap.put(chatName, databaseId);
+            jsonHandler.writeDbToJson(chatDbMap);
         } else {
             log.info("invalid registration message");
         }
@@ -45,9 +43,9 @@ public class ChatService {
         String chatName = getChatName(parsedSupplier);
         String databaseId = getDatabaseId(parsedSupplier);
 
-        if (this.chatDbMap.containsKey(chatName)) {
-            this.chatDbMap.put(chatName, databaseId);
-            this.jsonHandler.writeDbToJson(this.chatDbMap);
+        if (chatDbMap.containsKey(chatName)) {
+            chatDbMap.put(chatName, databaseId);
+            jsonHandler.writeDbToJson(chatDbMap);
         } else {
             log.info("no such database name");
         }
@@ -57,16 +55,16 @@ public class ChatService {
         Supplier<Stream<String>> parsedSupplier = parseSupplier(streamSupplier);
         String chatName = getChatName(parsedSupplier);
 
-        if (this.chatDbMap.containsKey(chatName)) {
-            this.chatDbMap.remove(chatName);
-            this.jsonHandler.writeDbToJson(this.chatDbMap);
+        if (chatDbMap.containsKey(chatName)) {
+            chatDbMap.remove(chatName);
+            jsonHandler.writeDbToJson(chatDbMap);
         } else {
             log.info("invalid deletion message");
         }
     }
 
     public boolean chatDbContains(String chatName) {
-        if (this.chatDbMap.containsKey(chatName)) return true;
+        if (chatDbMap.containsKey(chatName)) return true;
         else {
             log.error("chat {} is unregistered in chatsDB", chatName);
             return false;
@@ -76,11 +74,11 @@ public class ChatService {
     private static Supplier<Stream<String>> parseSupplier(Supplier<Stream<String>> streamSupplier) {
         return () -> streamSupplier
                 .get()
-                .filter(word -> !word.equals(BotCommands.REGISTER_DATABASE))
-                .filter(word -> !word.equals(BotCommands.REREGISTER_DATABASE))
-                .filter(word -> !word.equals(BotCommands.DELETE_DATABASE))
-                .filter(word -> !word.equals("="))
-                .filter(word -> !word.contains("="));
+                .filter(word -> !word.equals(BotCommands.REGISTER_DATABASE.getMessage()))
+                .filter(word -> !word.equals(BotCommands.REREGISTER_DATABASE.getMessage()))
+                .filter(word -> !word.equals(BotCommands.DELETE_DATABASE.getMessage()))
+                .filter(word -> !word.equals(ApplicationConfig.EQUALS_COMMAND))
+                .filter(word -> !word.contains(ApplicationConfig.EQUALS_COMMAND));
     }
 
     private String getChatName(Supplier<Stream<String>> streamSupplier) {

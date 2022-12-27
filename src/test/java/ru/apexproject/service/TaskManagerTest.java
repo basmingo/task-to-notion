@@ -10,9 +10,8 @@ import static org.junit.jupiter.api.Assertions.*;
 class TaskManagerTest {
     private final String TEST_TASK = "validation test";
     private final String TEST_CHAT = "BotTest2";
-    private final ApplicationConfig config = new ApplicationConfig();
-    private final ChatService chatService = new ChatService(config);
-    private final TaskManager taskManager = new TaskManager(chatService, config);
+    private final ChatService chatService = new ChatService();
+    private final TaskManager taskManager = new TaskManager(chatService);
 
     @Test
     void createTask() {

@@ -1,9 +1,14 @@
 package ru.apexproject.config;
 
-public class BotCommands {
-    public static final String CREATE_TASK = "#task";
-    public static final String REGISTER_DATABASE = "#register";
-    public static final String REREGISTER_DATABASE = "#reregister";
-    public static final String DELETE_DATABASE = "#delete";
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
+@Getter
+@AllArgsConstructor
+public enum BotCommands {
+    CREATE_TASK(ApplicationConfig.TASK_COMMAND),
+    REGISTER_DATABASE(ApplicationConfig.REGISTER_COMMAND),
+    REREGISTER_DATABASE(ApplicationConfig.REREGISTER_COMMAND),
+    DELETE_DATABASE(ApplicationConfig.DELETE_COMMAND);
+    private final String message;
 }

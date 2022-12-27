@@ -13,21 +13,23 @@ import java.util.Map;
  */
 @Slf4j
 public class JsonHandler {
-    private static final String RECOVER_CHATSDB_LOCATION = "chatsDB.json";
     private ChatsDB chatsDB;
     private final ObjectMapper mapper;
     private final String chatsDbOutsideJarPath;
 
-    public JsonHandler(ApplicationConfig applicationConfig) {
-        this.chatsDbOutsideJarPath = applicationConfig.getParentLocation() + applicationConfig.getChatsDb();
+
+    public JsonHandler() {
+        this.chatsDbOutsideJarPath = ApplicationConfig.PARENT_LOCATION
+                + ApplicationConfig.CHATS_DB;
+
         this.mapper = new ObjectMapper();
         this.chatsDB = new ChatsDB();
     }
 
     public Map<String, String> loadDbFromJson() {
         Map<String, String> result = new HashMap<>();
-        try (InputStream reader = new FileInputStream(this.chatsDbOutsideJarPath)) {
-            this.chatsDB = mapper.readValue(reader, ChatsDB.class);
+        try (InputStream reader = new FileInputStream(chatsDbOutsideJarPath)) {
+            chatsDB = mapper.readValue(reader, ChatsDB.class);
 
         } catch (IOException e) {
             log.error("reading ChatsDb.json failed");
@@ -35,14 +37,14 @@ public class JsonHandler {
             loadDbFromRecoverJson();
         }
 
-        this.chatsDB.getChats().forEach(item -> result.put(item.chatId, item.databaseId));
+        chatsDB.getChats().forEach(item -> result.put(item.chatId, item.databaseId));
         return result;
     }
 
     public void writeDbToJson(Map<String, String> map) {
-        try (OutputStream writer = new FileOutputStream(this.chatsDbOutsideJarPath)) {
-            this.chatsDB = new ChatsDB(map);
-            mapper.writeValue(writer, this.chatsDB);
+        try (OutputStream writer = new FileOutputStream(chatsDbOutsideJarPath)) {
+            chatsDB = new ChatsDB(map);
+            mapper.writeValue(writer, chatsDB);
 
         } catch (IOException e) {
             log.error("writing ChatsDb.json failed");
@@ -51,9 +53,11 @@ public class JsonHandler {
     }
 
     private void loadDbFromRecoverJson() {
-        this.chatsDB = new ChatsDB();
-        try (InputStream reader = this.getClass().getClassLoader().getResourceAsStream(RECOVER_CHATSDB_LOCATION)) {
-            this.chatsDB = mapper.readValue(reader, ChatsDB.class);
+        chatsDB = new ChatsDB();
+        try (InputStream reader = ApplicationConfig.CLASS_LOADER
+                .getResourceAsStream(ApplicationConfig.CHATS_DB)) {
+
+            chatsDB = mapper.readValue(reader, ChatsDB.class);
             log.info("recover ChatsDb.json loaded");
 
         } catch (IOException e) {

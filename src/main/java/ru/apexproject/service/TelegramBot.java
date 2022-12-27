@@ -19,35 +19,22 @@ import java.util.stream.Stream;
 
 @Slf4j
 public class TelegramBot extends TelegramLongPollingBot {
-    GetFile getFile;
-    ApplicationConfig config;
-    TaskManager taskManager;
-    Long chatId;
-    ChatService chatService;
-    BotCommands botCommands;
-    String telegramImageUrl;
-
-    public TelegramBot() {
-        this.config = new ApplicationConfig();
-        this.getFile = new GetFile();
-        this.chatService = new ChatService(this.config);
-        this.taskManager = new TaskManager(this.chatService, this.config);
-    }
+    private final GetFile getFile = new GetFile();
+    private final ChatService chatService = new ChatService();
+    private final TaskManager taskManager = new TaskManager(this.chatService);
 
     @Override
     public void onUpdateReceived(Update update) {
         if (isValid(update)) {
             Message message = update.getMessage();
             String chatName = message.getChat().getTitle();
-
-            this.chatId = message.getChatId();
             final Supplier<Stream<String>> wordsInMessage = getStreamSupplier(message);
 
             if (includeTaskCommand(wordsInMessage) && message.hasPhoto()) {
                 List<PhotoSize> a = message.getPhoto();
                 getFile.setFileId(a.get(a.size()-1).getFileId());
                 try {
-                    telegramImageUrl = execute(getFile).getFileUrl(getBotToken());
+                    String telegramImageUrl = execute(getFile).getFileUrl(getBotToken());
                     taskManager.createTask(wordsInMessage, chatName, telegramImageUrl);
                 } catch (TelegramApiException e) {
                     log.error(e.getMessage());
@@ -55,7 +42,6 @@ public class TelegramBot extends TelegramLongPollingBot {
 
             } else if (includeTaskCommand(wordsInMessage)) {
                 taskManager.createTask(wordsInMessage, chatName);
-
 
             } else if (includeRegisterCommand(wordsInMessage)) {
                 chatService.registerChat(wordsInMessage);
@@ -85,34 +71,34 @@ public class TelegramBot extends TelegramLongPollingBot {
     private boolean includeTaskCommand(Supplier<Stream<String>> streamSupplier) {
         return streamSupplier
                 .get()
-                .anyMatch(word -> word.equals(BotCommands.CREATE_TASK));
+                .anyMatch(word -> word.equals(BotCommands.CREATE_TASK.getMessage()));
     }
 
     private boolean includeRegisterCommand(Supplier<Stream<String>> wordsInMessage) {
         return wordsInMessage
                 .get()
-                .anyMatch(word -> word.equals(BotCommands.REGISTER_DATABASE));
+                .anyMatch(word -> word.equals(BotCommands.REGISTER_DATABASE.getMessage()));
     }
 
     private boolean includeReregisterCommand(Supplier<Stream<String>> wordsInMessage) {
         return wordsInMessage
                 .get()
-                .anyMatch(word -> word.equals(BotCommands.REREGISTER_DATABASE));
+                .anyMatch(word -> word.equals(BotCommands.REREGISTER_DATABASE.getMessage()));
     }
 
     private boolean includeDeleteCommand(Supplier<Stream<String>> wordsInMessage) {
         return wordsInMessage
                 .get()
-                .anyMatch(word -> word.equals(BotCommands.DELETE_DATABASE));
+                .anyMatch(word -> word.equals(BotCommands.DELETE_DATABASE.getMessage()));
     }
 
     @Override
     public String getBotUsername() {
-        return config.getBotName();
+        return ApplicationConfig.BOT_NAME;
     }
 
     @Override
     public String getBotToken() {
-        return config.getBotToken();
+        return ApplicationConfig.BOT_TOKEN;
     }
 }
