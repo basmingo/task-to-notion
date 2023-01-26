@@ -1,5 +1,5 @@
 # task-to-notion
-<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Telegram_logo.svg/2048px-Telegram_logo.svg" alt="git" width="40" height="40"/>
+<img src="https://commons.wikimedia.org/wiki/File:Telegram_logo.svg" alt="git" width="40" height="40"/>
 Service for linking of tasks from chats to the tracker, WIP service for an Architectural company
 Lightweight application on pure Java.
 
